@@ -8,16 +8,21 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading]   = useState(true);
   const { user } = useContext(AuthContext);
-
-  useEffect(() => {
-    const fetchData = async () => {
+  
+useEffect(() => {
+  const fetchData = async () => {
+    try {
       const [t, p] = await Promise.all([api.get('/tasks/'), api.get('/projects/')]);
       setTasks(t.data);
       setProjects(p.data);
+    } catch (err) {
+      console.error('Dashboard fetch error:', err);
+    } finally {
       setLoading(false);
-    };
-    fetchData();
-  }, []);
+    }
+  };
+  fetchData();
+}, []);
 
   const done       = tasks.filter(t => t.status === 'Done').length;
   const inProgress = tasks.filter(t => t.status === 'In Progress').length;

@@ -18,7 +18,6 @@ origins = [
 
 class DynamicCORSMiddleware(CORSMiddleware):
     async def is_origin_allowed(self, origin: str) -> bool:
-        # Allow all *.vercel.app subdomains for your project
         if re.match(r"https://team-task-manager-.*\.vercel\.app", origin):
             return True
         return origin in origins
