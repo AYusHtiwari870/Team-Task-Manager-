@@ -42,4 +42,12 @@ def read_root():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    import logging
+    import sys
+
+    # Route uvicorn logs to stdout so Railway doesn't tag them as "error"
+    log_config = uvicorn.config.LOGGING_CONFIG
+    log_config["handlers"]["default"]["stream"] = "ext://sys.stdout"
+    log_config["handlers"]["access"]["stream"] = "ext://sys.stdout"
+
+    uvicorn.run("main:app", host="0.0.0.0", port=port, log_config=log_config)
