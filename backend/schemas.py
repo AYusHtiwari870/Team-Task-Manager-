@@ -94,3 +94,18 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+# ADMIN SCHEMAS
+class UserRoleUpdate(BaseModel):
+    role: str  # "Admin" or "Member"
+
+# PASSWORD RESET SCHEMAS
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class MessageResponse(BaseModel):
+    message: str

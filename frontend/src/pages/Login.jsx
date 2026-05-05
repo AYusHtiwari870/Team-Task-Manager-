@@ -66,6 +66,14 @@ export default function Login() {
             </button>
           </div>
 
+          <div style={{ textAlign: 'right', marginTop: '-0.25rem', marginBottom: '0.25rem' }}>
+            <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: 'var(--blue)', textDecoration: 'none', fontWeight: 500 }}
+              onMouseEnter={e => e.target.style.textDecoration = 'underline'}
+              onMouseLeave={e => e.target.style.textDecoration = 'none'}>
+              Forgot password?
+            </Link>
+          </div>
+
           <button type="submit" className="btn btn-primary" style={{ width:'100%', marginTop:'0.5rem', padding:'0.75rem' }} disabled={loading}>
             {loading
               ? <span style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}><div style={{ width:16, height:16, borderRadius:'50%', border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'white', animation:'spin 0.8s linear infinite' }}/> Signing in…</span>

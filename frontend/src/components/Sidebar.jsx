@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { LayoutDashboard, FolderKanban, CheckSquare, LogOut, Zap } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, CheckSquare, LogOut, Shield } from 'lucide-react';
 
 export default function Sidebar() {
-  const { logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => { logout(); navigate('/login'); };
@@ -29,6 +29,16 @@ export default function Sidebar() {
         <NavLink to="/tasks" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           <CheckSquare size={17} /> Tasks
         </NavLink>
+
+        {/* Admin-only link */}
+        {user?.role === 'Admin' && (
+          <>
+            <div className="sidebar-section-label" style={{ marginTop: '1.25rem' }}>Admin</div>
+            <NavLink to="/admin" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <Shield size={17} /> User Management
+            </NavLink>
+          </>
+        )}
       </nav>
 
       {/* Footer */}
