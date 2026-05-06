@@ -7,13 +7,11 @@ load_dotenv()
 MONGO_URL = os.getenv("MONGO_URL")
 
 if not MONGO_URL:
-    raise RuntimeError("MONGO_URL environment variable is not set!")
+    raise RuntimeError("MONGO_URL environment variable is not set! Check Railway Variables tab.")
 
 client = AsyncIOMotorClient(
     MONGO_URL,
-    serverSelectionTimeoutMS=5000, 
-    tls=True,
-    tlsAllowInvalidCertificates=False,
+    serverSelectionTimeoutMS=5000,  
 )
 
 database = client["Ethra"]

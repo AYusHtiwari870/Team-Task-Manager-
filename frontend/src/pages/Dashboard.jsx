@@ -7,22 +7,24 @@ export default function Dashboard() {
   const [tasks, setTasks]       = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
   const { user } = useContext(AuthContext);
-  
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const [t, p] = await Promise.all([api.get('/tasks/'), api.get('/projects/')]);
-      setTasks(t.data);
-      setProjects(p.data);
-    } catch (err) {
-      console.error('Dashboard fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
-}, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [t, p] = await Promise.all([api.get('/tasks/'), api.get('/projects/')]);
+        setTasks(t.data);
+        setProjects(p.data);
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
+        setError('Failed to load dashboard data. Please refresh.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const done       = tasks.filter(t => t.status === 'Done').length;
   const inProgress = tasks.filter(t => t.status === 'In Progress').length;
@@ -37,8 +39,18 @@ useEffect(() => {
   };
 
   if (loading) return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'50vh', color:'var(--text-2)' }}>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'50vh', color:'var(--text-2)', gap:'0.75rem' }}>
+      <div style={{ width:20, height:20, borderRadius:'50%', border:'2px solid var(--blue)', borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }}/>
       Loading…
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'50vh' }}>
+      <div style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)', borderRadius:'var(--radius-sm)', padding:'1rem 1.5rem', fontSize:'0.85rem', color:'#f87171' }}>
+        {error}
+      </div>
     </div>
   );
 
@@ -135,6 +147,7 @@ useEffect(() => {
           </tbody>
         </table>
       </div>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }

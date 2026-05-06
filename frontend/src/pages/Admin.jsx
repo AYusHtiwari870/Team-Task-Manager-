@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api';
 import { Shield, Users, Trash2, ChevronDown, AlertTriangle, Crown, UserCheck } from 'lucide-react';
 
+// Helper: MongoDB returns _id but schema may serialize as id — handle both
+const getId = (u) => u?.id || u?._id;
+
 export default function Admin() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -36,7 +39,8 @@ export default function Admin() {
     setActionLoading(userId);
     try {
       await api.put(`/auth/users/${userId}/role`, { role: newRole });
-      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      // Refetch to get fresh data from server
+      await fetchUsers();
     } catch (err) {
       setError(err?.response?.data?.detail || 'Failed to update role');
       setTimeout(() => setError(''), 3000);
@@ -49,7 +53,7 @@ export default function Admin() {
     setActionLoading(userId);
     try {
       await api.delete(`/auth/users/${userId}`);
-      setUsers(users.filter(u => u.id !== userId));
+      setUsers(users.filter(u => getId(u) !== userId));
       setDeleteModal(null);
     } catch (err) {
       setError(err?.response?.data?.detail || 'Failed to delete user');
@@ -71,7 +75,6 @@ export default function Admin() {
 
   return (
     <div>
-      {/* Page Header */}
       <div className="page-header">
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -82,7 +85,6 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Error Banner */}
       {error && (
         <div style={{
           background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
@@ -93,7 +95,6 @@ export default function Admin() {
         </div>
       )}
 
-      {/* Stats */}
       <div className="stat-grid">
         <div className="stat-card violet">
           <div className="stat-icon violet"><Users size={18} /></div>
@@ -112,7 +113,6 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Users Table */}
       <div className="table-wrapper">
         <table className="data-table">
           <thead>
@@ -125,10 +125,12 @@ export default function Admin() {
           </thead>
           <tbody>
             {users.map(u => {
-              const isCurrentUser = u.id === user?.id;
+              const uid = getId(u);
+              const currentUid = getId(user);
+              const isCurrentUser = uid === currentUid;
               const initials = u.username.slice(0, 2).toUpperCase();
               return (
-                <tr key={u.id}>
+                <tr key={uid}>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <div style={{
@@ -151,8 +153,8 @@ export default function Admin() {
                     <div style={{ position: 'relative', display: 'inline-block' }}>
                       <select
                         value={u.role}
-                        onChange={e => handleRoleChange(u.id, e.target.value)}
-                        disabled={isCurrentUser || actionLoading === u.id}
+                        onChange={e => handleRoleChange(uid, e.target.value)}
+                        disabled={isCurrentUser || actionLoading === uid}
                         style={{
                           appearance: 'none', padding: '0.3rem 1.8rem 0.3rem 0.6rem',
                           fontSize: '0.75rem', borderRadius: '99px', fontWeight: 600,
@@ -178,7 +180,7 @@ export default function Admin() {
                     {!isCurrentUser && (
                       <button
                         onClick={() => setDeleteModal(u)}
-                        disabled={actionLoading === u.id}
+                        disabled={actionLoading === uid}
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                           padding: '0.35rem 0.75rem', background: 'transparent',
@@ -186,8 +188,8 @@ export default function Admin() {
                           color: 'var(--text-2)', fontSize: '0.75rem', fontWeight: 500,
                           cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit'
                         }}
-                        onMouseEnter={e => { e.target.style.color = 'var(--red)'; e.target.style.borderColor = 'rgba(239,68,68,0.3)'; e.target.style.background = 'rgba(239,68,68,0.08)'; }}
-                        onMouseLeave={e => { e.target.style.color = 'var(--text-2)'; e.target.style.borderColor = 'var(--border)'; e.target.style.background = 'transparent'; }}
+                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-2)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent'; }}
                       >
                         <Trash2 size={13} /> Remove
                       </button>
@@ -200,7 +202,6 @@ export default function Admin() {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteModal && (
         <div className="modal-overlay" onClick={() => setDeleteModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -224,11 +225,11 @@ export default function Admin() {
               <button className="btn btn-ghost" onClick={() => setDeleteModal(null)}>Cancel</button>
               <button
                 className="btn"
-                onClick={() => handleDelete(deleteModal.id)}
-                disabled={actionLoading === deleteModal.id}
+                onClick={() => handleDelete(getId(deleteModal))}
+                disabled={actionLoading === getId(deleteModal)}
                 style={{ background: 'var(--red)', color: 'white', boxShadow: '0 4px 18px rgba(239,68,68,0.3)' }}
               >
-                {actionLoading === deleteModal.id ? 'Deleting…' : 'Delete User'}
+                {actionLoading === getId(deleteModal) ? 'Deleting…' : 'Delete User'}
               </button>
             </div>
           </div>

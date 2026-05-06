@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
           const res = await api.get('/auth/me');
           setUser(res.data);
         } catch (error) {
-          console.error("Error fetching user", error);
+          console.error('Error fetching user', error);
           localStorage.removeItem('token');
         }
       }
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     formData.append('username', username);
     formData.append('password', password);
     const res = await api.post('/auth/login', formData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
     localStorage.setItem('token', res.data.access_token);
     const userRes = await api.get('/auth/me');

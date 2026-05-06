@@ -8,31 +8,59 @@ export default function Projects() {
   const [showModal, setShowModal] = useState(false);
   const [name, setName]           = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState('');
+  const [creating, setCreating]   = useState(false);
   const { user } = useContext(AuthContext);
 
   const fetchProjects = async () => {
-    const res = await api.get('/projects/');
-    setProjects(res.data);
+    try {
+      const res = await api.get('/projects/');
+      setProjects(res.data);
+    } catch (err) {
+      console.error('Projects fetch error:', err);
+      setError('Failed to load projects. Please refresh.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchProjects(); }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setCreating(true);
     try {
       await api.post('/projects/', { name, description });
       setShowModal(false);
-      setName(''); setDescription('');
-      fetchProjects();
+      setName('');
+      setDescription('');
+      await fetchProjects();
     } catch (err) {
       alert(err.response?.data?.detail || 'Error creating project');
-    } finally { setLoading(false); }
+    } finally {
+      setCreating(false);
+    }
   };
 
   const colorPalette = ['var(--blue)', 'var(--violet)', 'var(--cyan)', 'var(--amber)', 'var(--green)'];
   const getColor = (i) => colorPalette[i % colorPalette.length];
+
+  if (loading) return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'50vh', color:'var(--text-2)', gap:'0.75rem' }}>
+      <div style={{ width:20, height:20, borderRadius:'50%', border:'2px solid var(--blue)', borderTopColor:'transparent', animation:'spin 0.8s linear infinite' }}/>
+      Loading…
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'50vh' }}>
+      <div style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)', borderRadius:'var(--radius-sm)', padding:'1rem 1.5rem', fontSize:'0.85rem', color:'#f87171' }}>
+        {error}
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -60,7 +88,6 @@ export default function Projects() {
         <div className="grid-cards">
           {projects.map((project, i) => (
             <div key={project._id} className="card animate-slide-up" style={{ animationDelay:`${i * 60}ms`, display:'flex', flexDirection:'column' }}>
-              {/* Color accent top strip */}
               <div style={{ height:3, borderRadius:'99px 99px 0 0', background:`linear-gradient(90deg, ${getColor(i)}, transparent)`, margin:'-1.5rem -1.5rem 1.25rem', borderTopLeftRadius:'var(--radius-lg)', borderTopRightRadius:'var(--radius-lg)' }} />
 
               <div className="card-header">
@@ -107,8 +134,8 @@ export default function Projects() {
                 <textarea placeholder="What is this project about?" value={description} onChange={e => setDescription(e.target.value)} rows="3" style={{ resize:'vertical', minHeight:80 }} />
               </div>
               <div className="modal-actions">
-                <button type="submit" className="btn btn-primary" style={{ flex:1 }} disabled={loading}>
-                  {loading ? 'Creating…' : <><Plus size={16}/> Create Project</>}
+                <button type="submit" className="btn btn-primary" style={{ flex:1 }} disabled={creating}>
+                  {creating ? 'Creating…' : <><Plus size={16}/> Create Project</>}
                 </button>
                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
               </div>
@@ -116,6 +143,7 @@ export default function Projects() {
           </div>
         </div>
       )}
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
