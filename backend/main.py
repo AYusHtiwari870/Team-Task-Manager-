@@ -12,10 +12,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://team-task-manager-sigma-eight.vercel.app",
+        "https://team-task-manager-inky-xi.vercel.app",
         "http://localhost:5173",
         "http://localhost:3000",
     ],
-    allow_origin_regex=r"https://team-task-manager-.*\.vercel\.app",
+    allow_origin_regex=r"https://team-task-manager.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
